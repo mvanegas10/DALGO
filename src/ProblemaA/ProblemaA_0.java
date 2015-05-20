@@ -86,7 +86,7 @@ public class ProblemaA_0 {
 						}
 					}
 				}
-				//Retorna el máximo
+				//Actualiza el máximo
 				rmax = Math.max(rmax, rmaxij);
 				cmax = Math.max(cmax, cmaxij);
 			}
