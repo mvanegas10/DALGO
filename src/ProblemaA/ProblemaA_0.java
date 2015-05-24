@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Date;
 import java.util.Stack;
 
 public class ProblemaA_0 {
@@ -20,6 +21,9 @@ public class ProblemaA_0 {
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("src/ProblemaA/Prueba.in")));
 		String lineain,data[];
 		int M, N;
+		
+		Date fecha = new Date(); 
+		System.out.println(fecha.getHours() + " H " + fecha.getMinutes() + " MIN " + fecha.getSeconds() + " SECS ");
 		
 		while (true){
 			lineain = br.readLine();
@@ -41,23 +45,12 @@ public class ProblemaA_0 {
 			}
 			
 			int [] resp = new int [2];
-			
-			int [] prueba = new int [7];
-			prueba[0] = 10;
-			prueba[1] = 40;
-			prueba[2] = 30;
-			prueba[3] = 70;
-			prueba[4] = 10;
-			prueba[5] = 30;
-			prueba[6] = 60;
-			
-			System.out.println(rectanguloMaximo(prueba));
-			
-			
-//			resp = propuestaTres(foto);
-//
-//			System.out.println(resp[0] + " " + resp[1]);
+			resp = propuesta(foto);
+			System.out.println(resp[0] + " " + resp[1]);
 		}
+		
+		fecha = new Date(); 
+		System.out.println(fecha.getHours() + " H " + fecha.getMinutes() + " MIN " + fecha.getSeconds() + " SECS ");
 	}
 
 	//Solución ingenua
@@ -112,7 +105,13 @@ public class ProblemaA_0 {
 		return resp;
 	}
 	
-	public static int[] propuestaTres(boolean [][] foto){
+	
+	/**
+	 * Propuesta de mejora, retorna los valores del área del rectángulo y cuadrado más grande de una foto
+	 * @param foto Matriz booleana
+	 * @return	área del rectángulo y cuadrado más grande de una foto
+	 */
+	public static int[] propuesta (boolean [][] foto){
 		int cmax = 0;
 		int rmax = 0;
 		int m = foto.length;
@@ -121,13 +120,20 @@ public class ProblemaA_0 {
 		int j = n - 1;
 		boolean nuevo = true;
 		int [][] matriz = new int [m][n];
-		int [][] maxVertical = new int [m][n];
+		int [][] maxVertical = new int [m][n + 1];
+		
 		while (i >= 0) {
 			while (j >= 0) {
+				
+				//	Hay un uno
+				
 				if (foto[i][j]){
+					
+					//	Es interno
+					
 					if ( i != m - 1 && j != n - 1){
 						
-						//Matriz para solución de cuadrados
+						//	Matriz para solución de cuadrados
 						
 						int uno = matriz[i+1][j];
 						int dos = matriz[i][j+1];
@@ -135,15 +141,22 @@ public class ProblemaA_0 {
 						matriz[i][j] = 1 + Math.min((Integer) Math.min(uno, dos), tres);
 						
 					}
+					
+					//	Es un borde
+					
 					else
 						matriz[i][j] = 1;
 					
-					//Matriz para solución de rectángulos
+					//	Matriz para solución de rectángulos
+					
+					//	Es interno
 					
 					if (i < m - 1){
-						if (maxVertical[i + 1][j] > 0) maxVertical[i][j] = maxVertical[i + 1][j] - 1;
+						if (maxVertical[i + 1][j + 1] > 0) maxVertical[i][j + 1] = maxVertical[i + 1][j + 1] - 1;
 						else nuevo = true;
 					}
+					
+					//	No se ha calculado el histograma
 					
 					if (nuevo){
 						int k = i;
@@ -153,12 +166,15 @@ public class ProblemaA_0 {
 							else k = 0;
 							k--;
 						}
-						maxVertical[i][j] = suma;
+						maxVertical[i][j + 1] = suma;
 					}
 				}
+				
+				//	Es un cero
+				
 				else{
 					matriz[i][j] = 0;
-					maxVertical[i][j] = 0;
+					maxVertical[i][j + 1] = 0;
 				}
 				cmax = Math.max(matriz[i][j], cmax);
 				j--;
@@ -181,170 +197,54 @@ public class ProblemaA_0 {
 		return resp;
 	}
 	
+
+	/**
+	 * Calucula el área del rectángulo más grande dado un histograma
+	 * @param arreglo El arreglo que contiene los valores del histograma
+	 * @return El área del rectángulo máximo dado un histograma
+	 */
 	public static int rectanguloMaximo(int [] arreglo){
 		int maxArea = 0;
 		Stack<Integer> stk = new Stack<Integer>();
 		stk.push(0);
+		
 		for (int i = 1; i < arreglo.length; i++) {
 			int actual = arreglo[i];
 			
 			while(!stk.empty()){
 				int tope = stk.peek();
 				
+				//	Verifica si los valores son crecientes
+				
 				if (actual > arreglo[tope]){
 					stk.push(i);
 					break;
 				}
 				
+				//	Elimina el más grande de la pila
+				
 				tope = stk.pop();
 				
-				int izquierdo = (stk.empty())? 0: stk.peek();
-				int derecho = (arreglo[tope] == actual)? i: i - 1;
+				int izquierdo = (stk.empty())? 0: stk.peek() + 1;
+				int derecho = (arreglo[tope] == actual)? i + 1: i;
 				
 				int area = (derecho - izquierdo) * arreglo[tope];
 				maxArea = (area > maxArea)? area: maxArea;
 			}
 			
 			if (stk.empty()) stk.push(i);
-			}
+		}
+		
+		//	Vacía la pila y recalcula el área máxima
 		
 		int derecho = arreglo.length;
 		while( !stk.empty() ){
 			int tope = stk.pop();
-			int izquierdo = (stk.empty())? 0: stk.peek();
+			int izquierdo = (stk.empty())? 0: stk.peek() + 1;
 			int area = (derecho - izquierdo) * arreglo[tope];
 			maxArea = (area > maxArea)? area: maxArea;
 		}
 		return maxArea;
 	}
-	
-	//Solución propuesta
-	public static int[] propuesta(boolean [][] foto){
-		int iVer = 0;
-		int jVer = 0;
-		int iHor = 0;
-		int jHor = 0;
-		int m = foto.length;
-		int n = foto[0].length;
-		boolean nuevo = true;
-		int [][] maxHorizontal = new int [m][n];
-		int [][] maxVertical = new int [m][n];
-		for(int i=0; i != m; i++){
-			for (int j=0; j != n; j++){
-				if (foto[i][j]){
-					nuevo = !(i > 0 || j > 0);
-					if (!nuevo){
-						
-						if (i > 0){
-							if (maxVertical[i - 1][j] > 0)
-								maxVertical[i][j] = maxVertical[i - 1][j] - 1;
-							else
-								nuevo = true;
-						}
-						if (j > 0){
-							if (maxHorizontal[i][j - 1] > 0)
-								maxHorizontal[i][j] = maxHorizontal[i][j - 1] - 1;
-							else
-								nuevo = true;
-						}
-					}
-					if (nuevo){
-						int suma = 0;
-						for (int k = i; k != m; k++){
-							if(foto[k][j])
-								suma++;
-							else
-								k = m-1;
-						}
-						maxVertical[i][j] = suma;
-						if(suma > maxVertical[iVer][jVer]){
-							maxVertical[iVer][jVer] = suma;
-							iVer = i;
-							jVer = j;
-						}
-						suma = 0;
-						for (int k = j; k != n; k++){
-							if(foto[i][k])
-								suma++;
-							else
-								k = n-1;
-						}
-						maxHorizontal[i][j] = suma;
-						if(suma > maxHorizontal[iHor][jHor]){
-							maxHorizontal[iHor][jHor] = suma;
-							iHor = i;
-							jHor = j;
-						}
-					}
-				}
-			}
-		}
-		if (maxHorizontal[iHor][jHor] > maxVertical[iVer][jVer]){
-			
-		}
-		int [] resp = new int [2];
-		return resp;
-	}
-	
-	
-	public static int[] propuestaDos(boolean [][] foto){
-		
-		int m = foto.length;
-		int n = foto[0].length;
-		int i = 0;
-		int j = 0;
-		int iInicial = 0;
-		int jInicial = 0;
-		int iFinal = iInicial;
-		int jFinal = - 1;
-		int maximo = 0;
-		int cuenta = 0;
-		int stop = 0;
-		while (i < iFinal + 1){
-			if (foto[i][j]){
-				cuenta++;
-			
-				if (j > jInicial ){
-					i ++;
-					j --;
-				}
-				else{
-					j = i + 1;
-					i = 0;
-					jFinal = j;
-					iFinal ++;
-				}	
-			}
-			else{
-				 stop --;
-				 if (stop == - 2){
-					 maximo = Math.max(cuenta, maximo);
-					 stop = 0;
-					 iFinal = iInicial;
-					 jFinal = jInicial;
-					 if (j > jInicial){
-						jInicial = iFinal + 1;
-						iInicial = 0;
-					 }
-					 else {
-						iInicial = i ++;
-						jInicial = j --;
-					 }
-				 }
-				 if (j > jInicial){
-					j = iFinal + 1;
-					i = 0;
-				 }
-				 else {
-					i = i ++;
-					j = j --;
-				 }
-			}
-		}
-		int [] resp = new int [2];
-		return resp;
-	}
-	
-	
 }
 
