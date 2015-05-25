@@ -18,7 +18,7 @@ import java.util.Stack;
 public class ProblemaA_0 {
 
 	public static void main(String[] args) throws Exception {
-		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("src/ProblemaA/Prueba.in")));
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("src/ProblemaA/ProblemaASmall.in")));
 		String lineain,data[];
 		int M, N;
 		
